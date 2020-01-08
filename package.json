@@ -1,10 +1,19 @@
 {
-  "name": "Ruby2020artproject",
+  "name": "ruby2020artproject",
   "version": "1.0.0",
   "description": "a repo for my art-y projects",
   "main": "index.js",
   "repository": "git@github.com:Rupertofly/Ruby2020artproject.git",
   "author": "Ruby Quail <ruby@rubyquail.design>",
   "license": "MIT",
-  "private": false
+  "private": false,
+  "scripts": {
+    "build": "parcel ./src/index.html --port=8080"
+  },
+  "dependencies": {
+    "d3": "^5.15.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.7.4"
+  }
 }
