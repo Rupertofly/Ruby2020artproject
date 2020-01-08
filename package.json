@@ -1,0 +1,10 @@
+{
+  "name": "Ruby2020artproject",
+  "version": "1.0.0",
+  "description": "a repo for my art-y projects",
+  "main": "index.js",
+  "repository": "git@github.com:Rupertofly/Ruby2020artproject.git",
+  "author": "Ruby Quail <ruby@rubyquail.design>",
+  "license": "MIT",
+  "private": false
+}
