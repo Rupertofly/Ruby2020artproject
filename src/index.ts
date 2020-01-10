@@ -18,6 +18,7 @@ import * as noise from '@Rupertofly/noise';
 import * as cap from '@rupertofly/capture-client';
 import { myRoundPolly } from '@rupertofly/rubyq-utils';
 let ns = new noise.simplex4DNoise(2);
+let ns2 = new noise.simplex3DNoise(2);
 const canvas = document.getElementById('canvas')! as HTMLCanvasElement;
 let capture = new cap.CaptureClient(5696, canvas);
 const ctx = canvas.getContext('2d')!;
@@ -51,7 +52,7 @@ const sizeTransform = scaleLinear()
   .range([0, 1, 0]);
 const SCALE = 5;
 const MAX_RAD = sqrt(WID ** 2 + HEI ** 2) / 2;
-const CELL_SIZE = 16;
+const CELL_SIZE = 32;
 const GAP = 4;
 const SEG = CELL_SIZE + GAP;
 const RINGS = Math.ceil(MAX_RAD / SEG);
@@ -63,6 +64,22 @@ ctx.fillStyle = 'black';
 ctx.fillRect(0, 0, WID, HEI);
 ctx.fillStyle = 'white';
 let frameCount = 0;
+
+let newImageData: number[][] = new Array(64 * 64).fill([0, 0, 0, 0]);
+newImageData = newImageData.map((vl, i) => {
+  let v = Math.random() * 24;
+  let r = Math.random() > 0.5 ? 128 : 0;
+  let g = Math.random() > 0.8 ? 128 : 0;
+  return [r, g, 0, v];
+});
+let texIG = new ImageData(64, 64);
+texIG.data.set(new Uint8ClampedArray(newImageData.flat().flat()));
+let texCanvas = new OffscreenCanvas(16, 16);
+const texctx = texCanvas.getContext('2d')!;
+texctx.putImageData(texIG, 0, 0);
+let tex: CanvasPattern;
+let textex = ctx.createPattern(texCanvas, 'repeat')!;
+const colvals: string[] = [];
 const render = () => {
   let values: number[] = [];
   const t = (frameCount % 360) / 360;
@@ -89,13 +106,8 @@ const render = () => {
         10 + (i / RINGS) * SCALE
       );
       values.push(valueTranform(value));
-      colours.push(
-        rgb(
-          valueTranform(value) * 255,
-          valueTranform(value) * 255,
-          valueTranform(value) * 255
-        ).toString()
-      );
+      if (frameCount === 0)
+        colvals.push(colScale(valueTranform(value)).toString());
       const xSize = CELL_WID / 4 + sizeTransform(value) * (CELL_WID / 4);
       const ySize = CELL_SIZE / 4 + sizeTransform(value) * (CELL_SIZE / 4);
       points.push([
@@ -111,12 +123,13 @@ const render = () => {
     ])
     .polygons(points);
   v.map((polygon, i) => {
-    ctx.shadowBlur = 3;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
-    ctx.shadowColor = '#00000000';
-    ctx.fillStyle = colours[i];
-    ctx.strokeStyle = colours[i];
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 3;
+    ctx.shadowColor = '#00000084';
+    ctx.fillStyle = colvals[i];
+    ctx.strokeStyle = '#eeeeee';
+    ctx.lineWidth = 0;
     ctx.beginPath();
     myRoundPolly(
       ctx,
@@ -124,41 +137,27 @@ const render = () => {
       0
     );
     ctx.fill();
+    ctx.shadowColor = '#00000000';
+    textex.setTransform(
+      new DOMMatrix().translate(
+        10 * i + points[i][0] + WID / 2,
+        10 * i + points[i][1] + WID / 2
+      )
+    );
+    ctx.fillStyle = textex;
+    ctx.fill();
     ctx.stroke();
+    textex.setTransform(new DOMMatrix().translate(0, 0));
+    ctx.strokeStyle = textex;
+    ctx.stroke();
+    // myRoundPolly(
+    //   ctx,
+    //   polygon.map(d => ({ x: d[0], y: d[1] })),
+    //   0
+    // );
   });
-  let id = ctx.getImageData(0, 0, WID, HEI);
   ctx.resetTransform();
-  let pixels: number[] = [];
-  for (let index = 0; index < id.data.length; index += 4) {
-    pixels.push(id.data[index]);
-  }
-  let cc = contours()
-    .size([WID, HEI])
-    .thresholds(range(0, 255, 32));
-  let output = cc(pixels);
-  output.map(threshold => {
-    ctx.fillStyle = '#fefefe';
-    ctx.shadowColor = `#111111${Math.floor(threshold.value)
-      .toString(16)
-      .padStart(2, '0')}`;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
-    ctx.shadowBlur = 4;
-    threshold.coordinates.map(polygon => {
-      ctx.beginPath();
-      polygon[0].map(v => ctx.lineTo(v[0], v[1]));
-      ctx.closePath();
-      if (polygon.length > 1) {
-        for (let index = 1; index < polygon.length; index++) {
-          polygon[index].map(v => ctx.lineTo(v[0], v[1]));
-          ctx.closePath();
-        }
-      }
-      ctx.fill();
-    });
-  });
-
   frameCount++;
-  capture.capture().then(() => requestAnimationFrame(render));
+  capture.capture().then(() => requestAnimationFrame(() => render()));
 };
 requestAnimationFrame(render);
