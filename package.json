@@ -10,7 +10,12 @@
   "scripts": {
     "build": "parcel ./src/index.html --port=8080"
   },
+  "browserslist": [
+    "last 1 Chrome version"
+  ],
   "dependencies": {
+    "@rupertofly/capture-client": "^1.1.0",
+    "@rupertofly/rubyq-utils": "^1.1.1",
     "d3": "^5.15.0"
   },
   "devDependencies": {
