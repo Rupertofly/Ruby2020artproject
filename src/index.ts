@@ -14,7 +14,7 @@ import {
   contours,
 } from 'd3';
 type Position = [number, number];
-import { createTextChangeRange } from 'typescript';
+import { createTextChangeRange, RegularExpressionLiteral } from 'typescript';
 import * as noise from '@Rupertofly/noise';
 import * as cap from '@rupertofly/capture-client';
 import {
@@ -22,13 +22,25 @@ import {
   drawMultiPG,
   drawPG,
   transformMultiPG,
+  useRegl,
 } from '@rupertofly/rubyq-utils';
+import * as regl from 'regl';
+import fragShader from './coolfrag.frag';
 let ns = new noise.simplex4DNoise(2);
 let ns2 = new noise.simplex3DNoise(2);
 const canvas = document.getElementById('canvas')! as HTMLCanvasElement;
 // let capture = new cap.CaptureClient(5696, canvas);
-const ctx = canvas.getContext('2d')!;
+const ofc = document.getElementById('mystcanv')! as HTMLCanvasElement;
+const ctx = ofc.getContext('2d')!;
+// const outputCtx = canvas.getContext('2d')!;
+const { gl, newAction } = useRegl(canvas);
+const vertTex = gl.texture(canvas.width, canvas.height);
 const { width: WID, height: HEI } = canvas;
+const vertBuffer = gl.framebuffer({
+  color: vertTex,
+  height: HEI,
+  width: WID,
+});
 const TAU = Math.PI * 2;
 const { PI, sin, cos, sqrt, floor: flr } = Math;
 interface myRing extends DefaultArcObject {
@@ -65,6 +77,30 @@ ctx.fillRect(0, 0, WID, HEI);
 ctx.fillStyle = 'white';
 let frameCount = 0;
 let noiseSource = new noise.simplex4DNoise(RAD);
+interface props {
+  buf?: regl.Framebuffer2D;
+  tex: regl.Texture2D;
+  isV: number;
+}
+let myBlurFunction = newAction<props>(
+  {
+    framebuffer: (c, p) => (p.buf || null) as any,
+    uniforms: {
+      inputTexture: (c, p) => p.tex,
+      'kernal[0]': 0.028532,
+      'kernal[1]': 0.067234,
+      'kernal[2]': 0.124009,
+      'kernal[3]': 0.179044,
+      'kernal[4]': 0.20236,
+      'kernal[5]': 0.179044,
+      'kernal[6]': 0.124009,
+      'kernal[7]': 0.067234,
+      'kernal[8]': 0.028532,
+      isVert: (c, p) => p.isV,
+    },
+  },
+  fragShader
+);
 // let texIG = new ImageData(64, 64);
 // texIG.data.set(new Uint8ClampedArray(newImageData.flat().flat()));
 // let texCanvas = new OffscreenCanvas(16, 16);
@@ -73,6 +109,7 @@ let noiseSource = new noise.simplex4DNoise(RAD);
 // let tex: CanvasPattern;
 // let textex = ctx.createPattern(texCanvas, 'repeat')!;
 const colvals: string[] = [];
+const inputTexture = gl.texture({ data: ofc });
 const render = () => {
   let values: number[] = [];
   const t = (frameCount % 360) / 360;
@@ -110,8 +147,17 @@ const render = () => {
       ctx.stroke();
     });
   });
-  frameCount++;
-  requestAnimationFrame(render);
+  inputTexture({ data: ofc, width: 640, height: 640 });
+  myBlurFunction({ buf: vertBuffer, isV: 1, tex: inputTexture });
+  // inputTexture({ data: vertBuffer as any, width: 640, height: 640 });
+
+  setTimeout(() => {
+    // inputTexture({ data: vertTex, width: 640, height: 640 });
+    myBlurFunction({ isV: 0, tex: vertTex });
+
+    frameCount++;
+    requestAnimationFrame(render);
+  }, 5000);
   // capture.capture().then(() => requestAnimationFrame(() => render()));
 };
 requestAnimationFrame(render);
