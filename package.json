@@ -15,10 +15,12 @@
   ],
   "dependencies": {
     "@rupertofly/capture-client": "^1.1.0",
-    "@rupertofly/rubyq-utils": "^1.1.1",
+    "@rupertofly/noise": "^1.0.2",
+    "@rupertofly/rubyq-utils": "^1.2.2",
     "d3": "^5.15.0"
   },
   "devDependencies": {
+    "@types/geojson": "^7946.0.7",
     "typescript": "^3.7.4"
   }
 }

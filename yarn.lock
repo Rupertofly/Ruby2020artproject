@@ -9,14 +9,27 @@
   dependencies:
     socket.io-client "^2.3.0"
 
-"@rupertofly/rubyq-utils@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@rupertofly/rubyq-utils/-/rubyq-utils-1.1.1.tgz#f4ad6000a6cbb9b75760321108a0c29b99215845"
-  integrity sha512-HL4+/m7XmNI24h80SuLVZVOL58wumAwEmOd3z464b4+jdrFVrXWvES+F1/w5vNDE3UKV9LxAKbhaoCXr27lH+Q==
+"@rupertofly/noise@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@rupertofly/noise/-/noise-1.0.2.tgz#c971fb9a2d875f4709450bed2a575017037eff81"
+  integrity sha512-UVGZjBScJie7tnGPHz+wfsLOZi04Cv+AN85wB1o+baLciB7Yw25jZYv0jx6tkJ+5VdpVGgMdDDF2xucpz+Z50w==
+  dependencies:
+    open-simplex-noise "^2.2.0"
+
+"@rupertofly/rubyq-utils@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@rupertofly/rubyq-utils/-/rubyq-utils-1.2.2.tgz#12a53e769f6f2f7832ca8f145166993dcdabc580"
+  integrity sha512-bNz6/TMHu3o36sxtH4BLy+CXMaG1Tr2mSL9KTAhtJT1JqRdimpWemRj9i20GzN7Z2vUpwhbfYKnsrjY6z9/qXg==
   dependencies:
     d3 "^5.9.2"
     js-clipper "^1.0.1"
+    regl "^1.3.13"
     simplex-noise "^2.4.0"
+
+"@types/geojson@^7946.0.7":
+  version "7946.0.7"
+  resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.7.tgz#c8fa532b60a0042219cdf173ca21a975ef0666ad"
+  integrity sha512-wE2v81i4C4Ol09RtsWFAqg3BUitWbHSpSlIo+bNdsCJijO9sjme+zm+73ZMCa/qMC8UEERxzGbvmr1cffo2SiQ==
 
 after@0.8.2:
   version "0.8.2"
@@ -419,6 +432,11 @@ object-component@0.0.3:
   resolved "https://registry.yarnpkg.com/object-component/-/object-component-0.0.3.tgz#f0c69aa50efc95b866c186f400a33769cb2f1291"
   integrity sha1-8MaapQ78lbhmwYb0AKM3acsvEpE=
 
+open-simplex-noise@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/open-simplex-noise/-/open-simplex-noise-2.2.0.tgz#c85b9c882e3b7140c1211ece5f5d8d5d36a6a0a1"
+  integrity sha512-5/OVHsZIY0cPQXTYZNLVmgYbIQokiwuN7nDj7WVZ5MBOcElLD1gKYRGjuVwCDEeL1wXDgozazewFIx/NyXQ1/Q==
+
 parseqs@0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/parseqs/-/parseqs-0.0.5.tgz#d5208a3738e46766e291ba2ea173684921a8b89d"
@@ -432,6 +450,11 @@ parseuri@0.0.5:
   integrity sha1-gCBKUNTbt3m/3G6+J3jZDkvOMgo=
   dependencies:
     better-assert "~1.0.0"
+
+regl@^1.3.13:
+  version "1.3.13"
+  resolved "https://registry.yarnpkg.com/regl/-/regl-1.3.13.tgz#c376bfa6477995a9be9cd21495a0c9beb9b2f3af"
+  integrity sha512-TTiCabJbbUykCL4otjqOvKqDFJhvJOT7xB51JxcDeSHGrEJl1zz4RthPcoOogqfuR3ECN4Te790DfHCXzli5WQ==
 
 rw@1:
   version "1.3.3"

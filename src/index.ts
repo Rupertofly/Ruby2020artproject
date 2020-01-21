@@ -16,7 +16,7 @@ import {
 import { createTextChangeRange } from 'typescript';
 import * as noise from '@Rupertofly/noise';
 import * as cap from '@rupertofly/capture-client';
-import { myRoundPolly } from '@rupertofly/rubyq-utils';
+import { myRoundPolly, drawMultiPG, drawPG } from '@rupertofly/rubyq-utils';
 let ns = new noise.simplex4DNoise(2);
 let ns2 = new noise.simplex3DNoise(2);
 const canvas = document.getElementById('canvas')! as HTMLCanvasElement;
@@ -130,12 +130,7 @@ const render = () => {
     ctx.fillStyle = colvals[i];
     ctx.strokeStyle = '#eeeeee';
     ctx.lineWidth = 0;
-    ctx.beginPath();
-    myRoundPolly(
-      ctx,
-      polygon.map(d => ({ x: d[0], y: d[1] })),
-      0
-    );
+    drawPG(polygon, ctx);
     ctx.fill();
     ctx.shadowColor = '#00000000';
     textex.setTransform(
