@@ -8,22 +8,11 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "parcel ./src/index.html --port=8080"
+    "build": "node"
   },
   "browserslist": [
     "last 1 Chrome version"
   ],
-  "dependencies": {
-    "@rupertofly/capture-client": "^1.1.0",
-    "@rupertofly/noise": "^1.0.2",
-    "@rupertofly/rubyq-utils": "^1.2.4",
-    "d3": "^5.15.0",
-    "regl": "^1.3.13"
-  },
-  "devDependencies": {
-    "@types/geojson": "^7946.0.7",
-    "glslify-bundle": "^5.1.1",
-    "glslify-deps": "^1.3.1",
-    "typescript": "^3.7.4"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }
