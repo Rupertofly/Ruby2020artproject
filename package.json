@@ -13,7 +13,12 @@
   "browserslist": [
     "last 1 Chrome version"
   ],
-  "dependencies": {},
+  "dependencies": {
+    "@rupertofly/capture-client": "^1.1.1",
+    "@rupertofly/noise": "^1.0.2",
+    "d3": "^5.15.0",
+    "regl": "^1.3.13"
+  },
   "devDependencies": {
     "fuse-box": "^3.7.1",
     "glslify": "^7.0.0",

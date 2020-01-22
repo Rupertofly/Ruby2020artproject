@@ -2,8 +2,9 @@ const { FuseBox, WebIndexPlugin, RawPlugin } = require('fuse-box');
 const path = require('path');
 const fuse = FuseBox.init({
   homeDir: 'src',
-  target: 'browser@es6',
+  target: 'browser@esnest',
   output: 'dist/$name.js',
+  sourceMaps: true,
   plugins: [
     WebIndexPlugin({
       author: 'Ruby Quail',
@@ -11,6 +12,7 @@ const fuse = FuseBox.init({
       path: '.',
       template: './src/index.html',
     }),
+    RawPlugin(['*.frag', '*.vert']),
   ],
 });
 fuse.dev({
@@ -19,6 +21,5 @@ fuse.dev({
 fuse
   .bundle('app')
   .instructions(' > index.ts')
-  .hmr()
   .watch();
 fuse.run();

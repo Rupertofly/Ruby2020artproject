@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "ESNext",
     "target": "ES2018",
     "jsx": "react",
-    "baseUrl": ".",
     "importHelpers": true,
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
-  }
+  },
+  "typeAcquisition": { "enable": true }
 }
