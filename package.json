@@ -8,11 +8,15 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "node"
+    "build": "node fuse.js"
   },
   "browserslist": [
     "last 1 Chrome version"
   ],
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "fuse-box": "^3.7.1",
+    "glslify": "^7.0.0",
+    "typescript": "^3.7.5"
+  }
 }
