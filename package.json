@@ -6,9 +6,8 @@
   "repository": "git@github.com:Rupertofly/Ruby2020artproject.git",
   "author": "Ruby Quail <ruby@rubyquail.design>",
   "license": "MIT",
-  "private": false,
   "scripts": {
-    "build": "node fuse.js"
+    "build": "yarn node fuse.js"
   },
   "browserslist": [
     "last 1 Chrome version"
@@ -16,6 +15,7 @@
   "dependencies": {
     "@rupertofly/capture-client": "^1.1.1",
     "@rupertofly/noise": "^1.0.2",
+    "@yarnpkg/pnpify": "^2.0.0-rc.16",
     "d3": "^5.15.0",
     "regl": "^1.3.13"
   },
