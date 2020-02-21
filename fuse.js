@@ -4,6 +4,7 @@ const { fusebox } = require('fuse-box'); // eslint-disable-line
 const fuse = fusebox({
   entry: 'src/index.ts',
   target: 'browser',
+  sourceMap:true,
   hmr: {
     hardReloadScripts: true,
   },
