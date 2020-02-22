@@ -1,91 +1,42 @@
-import * as d3 from 'd3';
-import REGL from 'regl';
-import { simplex4DNoise } from '@rupertofly/noise';
-import vertShader from './shaders/vertShader.vert';
-import fragShader from './shaders/CRTfragShader.frag';
-import * as cl from '@rupertofly/capture-client';
-const frontCanvas: HTMLCanvasElement = document.getElementById(
-  'canvas'
-) as HTMLCanvasElement;
-const client = new cl.CaptureClient(4569, frontCanvas);
-client.start({
-  frameRate: 24,
-  lengthIsFrames: true,
-  maxLength: 360,
-  name: 'radar',
-});
-const RADIUS = Math.floor(frontCanvas.width / 6);
-const backCanvas = document.createElement('canvas');
-backCanvas.width = RADIUS;
-backCanvas.height = RADIUS;
-console.log(vertShader);
-const gl = REGL(frontCanvas);
-const noiseScale = d3
-  .scaleLinear()
-  .domain([-0.83, 0.83])
-  .range([0, 255])
-  .clamp(true);
-// backCanvas.hidden = true;
-const mapContours = d3
-  .contours()
-  .size([RADIUS, RADIUS])
-  .thresholds(d3.range(0, 255, 255 / 6));
-document.body.appendChild(backCanvas);
-gl.clear({
-  color: [0, 0, 0, 1],
-});
-const filterCRT = gl<{ inputTexture: any }>({
-  vert: vertShader,
-  frag: fragShader,
-  attributes: {
-    position: gl.buffer([
-      [-1, 1],
-      [-1, -1],
-      [1, 1],
-      [1, -1],
-    ]),
-  },
-  count: 4,
-  primitive: 'triangle strip',
-  uniforms: { inputTexture: (ctx, prop) => prop.inputTexture },
-});
-const backContext: CanvasRenderingContext2D = backCanvas.getContext('2d');
-backContext.clearRect(0, 0, RADIUS, RADIUS);
-backContext.fillStyle = '#111111';
-backContext.strokeStyle = 'white';
-const NS_RAD = 1;
-const NS_SCL = 1 / 20;
-const noise = new simplex4DNoise(NS_RAD);
-let ticks = 0;
-const contourTexture = gl.texture();
-const render = () => {
-  backContext.fillRect(0, 0, RADIUS, RADIUS);
-  const t = (ticks % 360) / 360;
-  const contours = mapContours(
-    d3.range(RADIUS ** 2).map(i => {
-      const [x, y] = [NS_SCL * (i % RADIUS), NS_SCL * Math.floor(i / RADIUS)];
-      return noiseScale(noise.get(t, x, y));
-    })
-  );
-  contours.map(threshold => {
-    backContext.lineWidth = 0.4 + threshold.value / 128;
-    threshold.coordinates.map(shape => {
-      backContext.beginPath();
-      shape.map(loop => {
-        loop.map((pt, i) =>
-          i > 0
-            ? backContext.lineTo(pt[0], pt[1])
-            : backContext.moveTo(pt[0], pt[1])
-        );
-        backContext.closePath();
-      });
-      backContext.stroke();
-    });
-  });
-  contourTexture({ width: RADIUS, height: RADIUS, data: backCanvas });
-  filterCRT({ inputTexture: contourTexture });
-  ticks++;
-  // window.requestAnimationFrame(render);
-  client.capture().then(() => requestAnimationFrame(render));
-};
-window.requestAnimationFrame(render);
+import PointGraph from './PointGraph';
+const graph = new PointGraph(500,500,500);
+
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const context = canvas.getContext('2d');
+
+function drawPolygon(polygon:[number,number][]) {
+  context.moveTo(...polygon[1]);
+  context.beginPath();
+  for (let i = 1; i < polygon.length; i++) {
+    context.lineTo(...polygon[i])
+  }
+  context.closePath();
+  
+}
+function constrain(val:number,min:number,max:number) {
+  return val < min ? min : val > max ? max : val
+}
+type pt = [number,number]
+function samePoint(a:pt,b:pt) {
+  return a[0] === b[0] && a[1] === b[1];
+}
+
+function render() {
+  
+  graph.forceSim.tick();
+  context.clearRect(0,0,canvas.width,canvas.height)
+  context.strokeStyle = 'white';
+  const voronoiGraph = graph.voronoiFunction(graph.forceSim.nodes());
+  voronoiGraph.edges.map(edge => {
+    if (edge.left?.data.type != edge.right?.data.type) {
+      context.strokeStyle = 'red'
+      context.beginPath();
+      context.moveTo(...edge[0])
+      context.lineTo(...edge[1])
+      context.stroke();
+    } else {
+    }
+  })
+  window.requestAnimationFrame(render);
+}
+render();

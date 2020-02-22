@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "commonjs",
     "target": "ES2018",
     "jsx": "react",
     "importHelpers": true,

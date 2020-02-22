@@ -7,7 +7,7 @@
   "author": "Ruby Quail <ruby@rubyquail.design>",
   "license": "MIT",
   "scripts": {
-    "build": "yarn node fuse.js"
+    "build": "parcel src/index.html --port=8080"
   },
   "browserslist": [
     "last 1 Chrome version"
@@ -16,9 +16,12 @@
     "@rupertofly/capture-client": "^1.1.1",
     "@rupertofly/noise": "^1.0.2",
     "d3": "^5.15.0",
+    "d3-delaunay": "^5.2.1",
+    "lodash": "^4.17.15",
     "regl": "^1.3.13"
   },
   "devDependencies": {
+    "@types/d3-delaunay": "^4.1.0",
     "@typescript-eslint/eslint-plugin": "^2.20.0",
     "@typescript-eslint/parser": "^2.20.0",
     "eslint": "^6.8.0",
