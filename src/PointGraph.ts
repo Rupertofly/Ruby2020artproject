@@ -112,12 +112,12 @@ export class PointGraph {
     this.forceSim.force(`spacing`, spaceForce);
   }
   getRegionHulls() {
-    const types = group(this.blankPoints, p => p.type);
+    const type = group(this.blankPoints, p => p.type);
   }
   groupCells(cells: CellPoint[] = this.blankPoints) {
-    const unVisted = [...cells];
+    const cellSet = [...cells];
     const links = this.currentDiagram.links();
-    const neighbours = unVisted.map(currentCell => ({
+    const neighbours = cellSet.map(currentCell => ({
       currentCell,
       nbs: links
         .filter(checkLink => {
@@ -131,9 +131,15 @@ export class PointGraph {
             : currentLnk.source
         )
     }));
-    const typedCells = [...group(unVisted, c => c.type).entries()]
+    const typedCells = [...group(cellSet, c => c.type).entries()]
       .filter(set => !!set[0])
       .map(s => ({ type: s[0], cells: s[1] }));
+
+    const groups = typedCells.map(src => {
+      const type = src.type;
+      const unvisitedCells = [src.cells];
+      const groups = 0;
+    });
     return neighbours;
   }
   runV(points: CellPoint[] = this.blankPoints) {

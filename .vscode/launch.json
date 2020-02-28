@@ -9,22 +9,21 @@
       "request": "attach",
       "name": "Attach to Chrome",
       "port": 9222,
+      "sourceMaps": true,
       "webRoot": "${workspaceFolder}"
     },
     {
       "type": "chrome",
       "request": "launch",
       "name": "Launch Chrome against localhost",
-
+      "breakOnLoad": true,
+      "sourceMaps": true,
       "runtimeExecutable": "/Applications/Chromium.app/Contents/MacOS/Chromium",
       "runtimeArgs": [
         "--app=http://localhost:8080",
         "--remote-debugging-port=9222"
       ],
-      "webRoot": "${workspaceFolder}",
-      "sourceMapPathOverrides": {
-        "../*": "${webRoot}/*"
-      }
+      "webRoot": "${workspaceFolder}/src"
     }
   ]
 }

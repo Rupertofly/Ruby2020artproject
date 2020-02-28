@@ -7,6 +7,7 @@ enum colours {
   blue = 'rgb(88, 181, 222)',
   purple = 'rgb(180, 116, 238)'
 }
+type celltype = null | 'red' | 'blue';
 const canvas = document.getElementById(`canvas`) as HTMLCanvasElement;
 const context = canvas.getContext(`2d`);
 
@@ -25,6 +26,7 @@ type pt = [number, number];
 function samePoint(a: pt, b: pt) {
   return a[0] === b[0] && a[1] === b[1];
 }
+console.log('bary');
 
 function render() {
   graph.forceSim.tick();
@@ -66,4 +68,4 @@ function render() {
   });
   window.requestAnimationFrame(render);
 }
-render();
+window.requestAnimationFrame(render);

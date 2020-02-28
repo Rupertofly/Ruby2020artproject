@@ -2,16 +2,21 @@
   "name": "ruby2020artproject",
   "version": "1.0.0",
   "description": "a repo for my art-y projects",
-  "main": "index.js",
+  "main": "src/index.js",
   "repository": "git@github.com:Rupertofly/Ruby2020artproject.git",
   "author": "Ruby Quail <ruby@rubyquail.design>",
   "license": "MIT",
   "scripts": {
-    "build": "parcel src/index.html --port=8080"
+    "build": "parcel serve src/index.html --port=8080"
   },
-  "browserslist": [
-    "last 1 Chrome version"
-  ],
+  "source": "src/index.ts",
+  "targets": {
+    "context": "browser",
+    "includeNodeModules": true,
+    "sourceMap": {
+      "inlineSources": true
+    }
+  },
   "dependencies": {
     "@rupertofly/capture-client": "^1.1.1",
     "@rupertofly/noise": "^1.0.2",
@@ -22,6 +27,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
+    "@rollup/plugin-typescript": "^3.0.0",
     "@types/d3": "^5.7.2",
     "@types/d3-delaunay": "^4.1.0",
     "@typescript-eslint/eslint-plugin": "^2.20.0",
@@ -33,9 +39,14 @@
     "fuse-box": "^4.0.0-next.165",
     "glslify": "^7.0.0",
     "prettier": "^1.19.1",
+    "source-map-loader": "^0.2.4",
+    "ts-loader": "^6.2.1",
     "tslib": "^1.11.0",
     "typescript": "^3.7.5",
-    "typescript-eslint": "^0.0.1-alpha.0"
+    "typescript-eslint": "^0.0.1-alpha.0",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3"
   },
   "prettier": {
     "singleQuote": true
