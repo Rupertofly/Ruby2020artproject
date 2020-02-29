@@ -21,10 +21,16 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": 1,
-    "quotes": [
+    "quotes": ["error", "single", { "allowTemplateLiterals": true }],
+    "padding-line-between-statements": [
       "error",
-      "single",
-      { "allowTemplateLiterals": true }
+      { "blankLine": "always", "prev": "*", "next": "return" },
+      { "blankLine": "always", "prev": ["const", "let", "var"], "next": "*" },
+      {
+        "blankLine": "any",
+        "prev": ["const", "let", "var"],
+        "next": ["const", "let", "var"]
+      }
     ]
   },
   "globals": {
