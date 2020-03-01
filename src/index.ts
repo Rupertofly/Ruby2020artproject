@@ -1,6 +1,8 @@
 import PointGraph from './PointGraph';
 import CellPoint from './CellPoint';
 import * as d from 'd3-delaunay';
+import GD from './GraphDiagram';
+import { range } from 'd3';
 enum colours {
     red = 'rgb(245, 106, 104)',
     blue = 'rgb(88, 181, 222)',
@@ -13,7 +15,30 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const context = canvas.getContext(`2d`);
 const graph = new PointGraph(canvas.width, canvas.height, 1000);
+const edges = new GD(
+    [0, 0, 200, 200],
+    range(64).map(i => ({
+        x: Math.random() * 200,
+        y: Math.random() * 200
+    }))
+);
 
+// console.log(edges.points);
+context.strokeStyle = 'black';
+context.lineWidth = 1;
+context.fillStyle = 'red';
+edges.edges().map(edge => {
+    if (edge[0][0] > 300 || edge[1][0] > 300) console.log(edge);
+    if (!edge.left && !edge.right) return;
+    context.beginPath();
+
+    context.moveTo(...edge[0]);
+    context.lineTo(...edge[1]);
+    context.stroke();
+    if (edge.left) context.fillRect(edge.left.x, edge.left.y, 1, 1);
+    if (edge.right) context.fillRect(edge.right.x, edge.right.y, 1, 1);
+});
+/* 
 function drawPolygon(polygon: [number, number][]) {
     context.moveTo(...polygon[1]);
     context.beginPath();
@@ -77,3 +102,4 @@ function render() {
     window.requestAnimationFrame(render);
 }
 window.requestAnimationFrame(render);
+ */
