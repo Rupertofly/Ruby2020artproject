@@ -6,7 +6,7 @@
         "prettier/@typescript-eslint", // Uses eslint-config-prettier to disable ESLint rules from @typescript-eslint/eslint-plugin that would conflict with prettier
         "plugin:prettier/recommended" // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
     ],
-    "plugins": ["prettier"],
+    "plugins": ["prettier", "eslint-plugin-tsdoc"],
     "parserOptions": {
         "ecmaVersion": 2018, // Allows for the parsing of modern ECMAScript features
         "sourceType": "module" // Allows for the use of imports
@@ -20,7 +20,7 @@
     "rules": {
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-unused-vars": 1,
+        "@typescript-eslint/no-unused-vars": "off",
         "@typescript-eslint/no-namespace": "off",
         "quotes": ["error", "single", { "allowTemplateLiterals": true }],
         "padding-line-between-statements": [
@@ -36,7 +36,8 @@
                 "prev": ["const", "let", "var"],
                 "next": ["const", "let", "var"]
             }
-        ]
+        ],
+        "tsdoc/syntax": "warn"
     },
     "globals": {
         "process": false,

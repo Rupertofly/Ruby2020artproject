@@ -38,12 +38,16 @@ function group<TObject, TKey>(
 // =====================================
 
 // =====================================
-
+/**
+ * Class to manage the layout and grouping of points
+ */
 export class PointGraph {
     // ===================================
-
+    /** Graph Width */
     width = DEF_WID;
+    /** Graph Height */
     height = DEF_HEI;
+    /** Number of points */
     pointsCount = NUM_POINTS;
 
     blankPoints: CellPoint[] = [];
@@ -55,6 +59,12 @@ export class PointGraph {
 
     // ===================================
 
+    /**
+     * Creates an instance of point graph.
+     * @param width - width of graph
+     * @param height - height of graph
+     * @param points - number of points to generate
+     */
     constructor(width?: number, height?: number, points?: number) {
         this.width = width ?? this.width;
         this.height = height ?? this.height;

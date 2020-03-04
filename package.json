@@ -35,6 +35,7 @@
         "eslint-config-prettier": "^6.10.0",
         "eslint-plugin-prettier": "^3.1.2",
         "eslint-plugin-react": "^7.18.3",
+        "eslint-plugin-tsdoc": "^0.2.3",
         "fuse-box": "^4.0.0-next.165",
         "glslify": "^7.0.0",
         "prettier": "^1.19.1",
