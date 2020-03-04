@@ -3,13 +3,28 @@ import { range } from 'd3';
 type pt = [number, number];
 export class GraphDiagram<T extends XYVector> {
     points: T[];
+    edgePoints: XYVector[];
     delaunayGraph: Delaunay<T>;
     voronoiGraph: Voronoi<T>;
     extent: [number, number, number, number];
-    constructor(extent: [number, number, number, number], points: T[]) {
+    constructor(
+        extent: [number, number, number, number],
+        points: T[],
+        borderWidth: number
+    ) {
+        this.edgePoints = [];
+        const [pointMinX, pointMinY, width, height] = extent;
+
+        for (const x of range(pointMinX, width, borderWidth)) {
+            this.edgePoints.push({ x, y: pointMinY });
+            this.edgePoints.push({ x, y: height });
+        }
+        for (const y of range(pointMinY, height, borderWidth)) {
+            this.edgePoints.push({ y, x: pointMinX }, { y, x: width });
+        }
         this.points = points;
         this.delaunayGraph = Delaunay.from(
-            this.points,
+            [...this.points, ...this.edgePoints],
             p => p.x,
             p => p.y
         );
@@ -17,29 +32,44 @@ export class GraphDiagram<T extends XYVector> {
         this.voronoiGraph = this.delaunayGraph.voronoi(extent);
     }
     polygon(i: number): GraphDiagram.GraphPolygon<T> {
-        return Object.assign(this.voronoiGraph.cellPolygon(i), {
-            data: this.points[i]
+        const thisPolygon = this.voronoiGraph.cellPolygon(i);
+
+        if (!thisPolygon) return [] as GraphDiagram.GraphPolygon<T>;
+
+        return Object.assign(thisPolygon, {
+            data: this.points[i] || undefined
         }) as GraphDiagram.GraphPolygon<T>;
+    }
+    updatePoints(points: T[]) {
+        this.points = points;
+        this.delaunayGraph = Delaunay.from(
+            [...this.points, ...this.edgePoints],
+            p => p.x,
+            p => p.y
+        );
+        this.voronoiGraph = this.delaunayGraph.voronoi(this.extent);
     }
     neighbors(i: number): T[] {
         return [...this.voronoiGraph.neighbors(i)].map(j => this.points[j]);
     }
     edges() {
-        if (this.voronoiGraph.delaunay.hull) return undefined;
+        if (this.voronoiGraph.delaunay.hull.length <= 1) return [];
         const output: GraphDiagram.edge<T>[] = [];
+        const {
+            delaunay: { halfedges, inedges, hull },
+            circumcenters,
+            vectors
+        } = this.voronoiGraph;
 
-        for (const i of range(this.delaunayGraph.halfedges.length)) {
-            const j = this.delaunayGraph.halfedges[i];
+        for (const i of range(halfedges.length)) {
+            const j = halfedges[i];
 
             if (j < i) continue;
             const lhp = this.points[this.delaunayGraph.triangles[i]];
             const rhp = this.points[this.delaunayGraph.triangles[j]];
             const triI = Math.floor(i / 3) * 2;
             const triJ = Math.floor(j / 3) * 2;
-            const vxI: pt = [
-                this.voronoiGraph.circumcenters[triI],
-                this.voronoiGraph.circumcenters[triI + 1]
-            ];
+            const vxI: pt = [circumcenters[triI], circumcenters[triI + 1]];
             const vxJ: pt = [
                 this.voronoiGraph.circumcenters[triJ],
                 this.voronoiGraph.circumcenters[triJ + 1]
@@ -51,6 +81,13 @@ export class GraphDiagram<T extends XYVector> {
                     right: rhp
                 })
             );
+        }
+        let h0: number;
+        let h1 = this.delaunayGraph.hull[this.delaunayGraph.hull.length - 1];
+
+        for (const i of range(hull.length)) {
+            h0 = h1;
+            h1 = hull[i];
         }
 
         return output;
@@ -71,9 +108,4 @@ export namespace GraphDiagram {
 interface XYVector {
     x: number;
     y: number;
-}
-declare module 'd3-delaunay' {
-    interface Voronoi<P> {
-        neighbors(i: number): IterableIterator<number>;
-    }
 }

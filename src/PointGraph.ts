@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import CellPoint from './CellPoint';
+import GraphDiagram from './GraphDiagram';
 
 /* TODO:
 
@@ -16,7 +17,7 @@ const DEF_HEI = 600;
 // Helpers
 
 // const { PI, floor: flr } = Math;
-const rnd = (e = 1) => Math.random() * e;
+const random = (e = 1) => Math.random() * e;
 
 function group<TObject, TKey>(
     a: ArrayLike<TObject>,
@@ -48,8 +49,8 @@ export class PointGraph {
     blankPoints: CellPoint[] = [];
     populatedPoints: CellPoint[] = [];
 
-    voronoiFunction: d3.VoronoiLayout<CellPoint>;
-    currentDiagram: d3.VoronoiDiagram<CellPoint>;
+    // voronoiFunction: d3.VoronoiLayout<CellPoint>;
+    currentDiagram: GraphDiagram<CellPoint>;
     forceSim: d3.Simulation<CellPoint, any>;
 
     // ===================================
@@ -61,19 +62,18 @@ export class PointGraph {
         d3.range(this.pointsCount).forEach(i =>
             this.blankPoints.push(
                 CellPoint.new(
-                    rnd(this.width),
-                    rnd(this.height),
+                    random(this.width),
+                    random(this.height),
                     _.sample([undefined, undefined, undefined, `red`, 'blue']),
-                    i.toString()
+                    i
                 )
             )
         );
-        this.voronoiFunction = d3
-            .voronoi<CellPoint>()
-            .x(d => d.x)
-            .y(d => d.y)
-            .size([this.width, this.height]);
-
+        this.currentDiagram = new GraphDiagram(
+            [0, 0, this.width, this.height],
+            this.blankPoints,
+            1
+        );
         this.forceSim = d3.forceSimulation(this.blankPoints);
         this.forceSim.stop();
         // this.forceSim.alphaTarget(0);
@@ -90,19 +90,23 @@ export class PointGraph {
             .forceManyBody()
             .strength(0.4)
             .distanceMin(100);
-        const spaceForce: d3.Force<CellPoint, any> = alpha => {
-            const arr = this.currentDiagram || this.runV().currentDiagram;
+        const lloydForce: d3.Force<CellPoint, any> = alpha => {
+            const arr = this.currentDiagram || this.runVoronoi().currentDiagram;
 
-            arr.polygons().map(pgon => {
-                const [cx, cy] = d3.polygonCentroid(pgon);
+            this.blankPoints.map((polygon, i) => {
+                const [cx, cy] = d3.polygonCentroid(
+                    this.currentDiagram.polygon(i)
+                );
 
-                pgon.data.vx -= (pgon.data.x - cx) * alpha * 0.1;
-                pgon.data.vy -= (pgon.data.y - cy) * alpha * 0.1;
+                polygon.vx -= (polygon.x - cx) * alpha * 0.1;
+                polygon.vy -= (polygon.y - cy) * alpha * 0.1;
             });
         };
-        const touch = d3.forceCollide().radius(8);
+        const collideForce = d3
+            .forceCollide<CellPoint>()
+            .radius((d, i) => (d.type ? (i % 16 === 0 ? 60 : 5) : 0));
 
-        this.forceSim.force(`t`, touch);
+        this.forceSim.force(`collision`, collideForce);
         const groupingForce = d3
             .forceLink()
             .links(
@@ -120,28 +124,16 @@ export class PointGraph {
             .distance(5);
 
         // this.forceSim.force(`grouping`, groupingForce);
-        this.forceSim.force(`spacing`, spaceForce);
+        this.forceSim.force(`spacing`, lloydForce);
     }
     getRegionHulls() {
         const type = group(this.blankPoints, p => p.type);
     }
     groupCells(cells: CellPoint[] = this.blankPoints) {
         const cellSet = [...cells];
-        const links = this.currentDiagram.links();
-        const neighbours = cellSet.map(currentCell => ({
+        const neighbours = cellSet.map((currentCell, i) => ({
             currentCell,
-            nbs: links
-                .filter(checkLink => {
-                    return (
-                        currentCell === checkLink.source ||
-                        currentCell === checkLink.target
-                    );
-                })
-                .map(currentLnk =>
-                    currentLnk.source === currentCell
-                        ? currentLnk.target
-                        : currentLnk.source
-                )
+            nbs: this.currentDiagram.neighbors(i)
         }));
         const typedCells = [...group(cellSet, c => c.type).entries()]
             .filter(set => !!set[0])
@@ -155,8 +147,8 @@ export class PointGraph {
 
         return neighbours;
     }
-    runV(points: CellPoint[] = this.blankPoints) {
-        this.currentDiagram = this.voronoiFunction(points);
+    runVoronoi(points: CellPoint[] = this.blankPoints) {
+        this.currentDiagram.updatePoints(points);
 
         return this;
     }

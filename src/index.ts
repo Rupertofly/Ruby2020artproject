@@ -2,7 +2,8 @@ import PointGraph from './PointGraph';
 import CellPoint from './CellPoint';
 import * as d from 'd3-delaunay';
 import GD from './GraphDiagram';
-import { range } from 'd3';
+import { range, polygonCentroid } from 'd3';
+import { ContextTaskManager } from 'fuse-box/core/ContextTaskManager';
 enum colours {
     red = 'rgb(245, 106, 104)',
     blue = 'rgb(88, 181, 222)',
@@ -13,39 +14,51 @@ const canvas = document.getElementById(`canvas`) as HTMLCanvasElement;
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-const context = canvas.getContext(`2d`);
+const drawingContext = canvas.getContext(`2d`);
 const graph = new PointGraph(canvas.width, canvas.height, 1000);
-const edges = new GD(
-    [0, 0, 200, 200],
-    range(64).map(i => ({
-        x: Math.random() * 200,
-        y: Math.random() * 200
-    }))
-);
+const myPoints = range(4000).map(i => ({
+    x: 200 + Math.random() * 10,
+    y: 200 + Math.random() * 10,
+    type: Math.random() > 0.6 ? 'a' : 'b'
+}));
+const edges = new GD([1, 1, 720, 720], myPoints, 5);
 
-// console.log(edges.points);
-context.strokeStyle = 'black';
-context.lineWidth = 1;
-context.fillStyle = 'red';
+console.log(edges);
+drawingContext.strokeStyle = 'black';
+drawingContext.lineWidth = 1;
+drawingContext.fillStyle = 'red';
 edges.edges().map(edge => {
-    if (edge[0][0] > 300 || edge[1][0] > 300) console.log(edge);
-    if (!edge.left && !edge.right) return;
-    context.beginPath();
+    // if (edge[0][0] > 300 || edge[1][0] > 300) console.log(edge);
+    if (!edge.left || !edge.right) return;
+    if (edge.left.type === edge.left.type) return;
+    drawingContext.beginPath();
 
-    context.moveTo(...edge[0]);
-    context.lineTo(...edge[1]);
-    context.stroke();
-    if (edge.left) context.fillRect(edge.left.x, edge.left.y, 1, 1);
-    if (edge.right) context.fillRect(edge.right.x, edge.right.y, 1, 1);
+    drawingContext.moveTo(...edge[0]);
+    drawingContext.lineTo(...edge[1]);
+    drawingContext.stroke();
+    drawingContext.strokeStyle = 'green';
+    drawingContext.beginPath();
+    drawingContext.moveTo(...edge[0]);
+    if (edge.left) drawingContext.lineTo(edge.left.x, edge.left.y);
+    drawingContext.stroke();
+    drawingContext.fillStyle = 'yellow';
+    // if (edge.right) context.fillRect(edge.right.x, edge.right.y, 2, 2);
 });
-/* 
+drawingContext.fillStyle = 'blue';
+// for (let i = 0; i < edges.voronoiGraph.delaunay.points.length; i += 2) {
+//     const x = edges.voronoiGraph.delaunay.points[i];
+//     const y = edges.voronoiGraph.delaunay.points[i + 1];
+
+//     context.fillRect(x, y, 2, 2);
+// }
+
 function drawPolygon(polygon: [number, number][]) {
-    context.moveTo(...polygon[1]);
-    context.beginPath();
+    drawingContext.moveTo(...polygon[1]);
+    drawingContext.beginPath();
     for (let i = 1; i < polygon.length; i++) {
-        context.lineTo(...polygon[i]);
+        drawingContext.lineTo(...polygon[i]);
     }
-    context.closePath();
+    drawingContext.closePath();
 }
 
 function constrain(val: number, min: number, max: number) {
@@ -60,46 +73,64 @@ function samePoint(a: pt, b: pt) {
 function render() {
     // graph.forceSim.alpha() > 0.1 && console.time('x');
     graph.forceSim.tick();
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.strokeStyle = `white`;
-    graph.runV();
+    drawingContext.clearRect(0, 0, canvas.width, canvas.height);
+    drawingContext.strokeStyle = `black`;
+    drawingContext.lineWidth = 2;
+    graph.runVoronoi();
+    edges.updatePoints(myPoints);
+    myPoints.map((p, i) => {
+        const [cx, cy] = polygonCentroid(edges.polygon(i));
+
+        (p.x = cx), (p.y = cy);
+    });
     const voronoiGraph = graph.currentDiagram;
-    const unVisited = voronoiGraph.cells.filter(
-        p => p.site.data.type !== undefined
+    const unVisitedCells = voronoiGraph.points.filter(
+        p => p.type !== undefined
     );
-    const groups: { [type: string]: CellPoint[] } = {
+    const groupedCells: { [type: string]: CellPoint[] } = {
         red: [] as CellPoint[],
         blue: [] as CellPoint[]
     };
 
-    while (unVisited.length) {
-        const starter = unVisited.shift();
+    while (unVisitedCells.length) {
+        const startingCell = unVisitedCells.shift();
     }
-    voronoiGraph.edges.map(edge => {
-        if (edge.left?.data.type != edge.right?.data.type) {
+    voronoiGraph.edges().map(edge => {
+        if (edge.left?.type != edge.right?.type) {
             if (!edge.left || !edge.right) return;
-            context.strokeStyle =
+            drawingContext.strokeStyle =
                 colours[
-                    edge.left.data.type
-                        ? edge.right.data.type
+                    edge.left.type
+                        ? edge.right.type
                             ? 'purple'
-                            : edge.left.data.type
-                        : edge.right.data.type
+                            : edge.left.type
+                        : edge.right.type
                 ];
-            context.beginPath();
-            context.moveTo(...edge[0]);
-            context.lineTo(...edge[1]);
-            context.stroke();
+            drawingContext.beginPath();
+            drawingContext.moveTo(...edge[0]);
+            drawingContext.lineTo(...edge[1]);
+            drawingContext.stroke();
         } else {
         }
     });
-    voronoiGraph.cells.forEach(c => {
-        context.fillStyle = colours[c.site.data.type] ?? 'rgb(250, 250, 250)';
-        context.beginPath();
-        context.ellipse(c.site[0], c.site[1], 5, 5, 0, 0, Math.PI * 2);
-        context.fill();
+    voronoiGraph.points.forEach(cell => {
+        drawingContext.fillStyle = colours[cell.type] ?? 'rgb(250, 250, 250)';
+        drawingContext.beginPath();
+        const circleRadius =
+            cell.type === 'red' ? 12 : cell.type === 'blue' ? 12 : 2;
+
+        drawingContext.ellipse(
+            cell.x,
+            cell.y,
+            circleRadius,
+            circleRadius,
+            0,
+            0,
+            Math.PI * 2
+        );
+
+        drawingContext.fill();
     });
     window.requestAnimationFrame(render);
 }
 window.requestAnimationFrame(render);
- */

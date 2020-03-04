@@ -14,13 +14,13 @@ export class CellPoint {
     fy?: number;
 
     type: cellType = undefined;
-    id?: string;
+    id?: number;
     group?: number;
 
     contents?: GraphNode | undefined;
     // ===================================
 
-    private constructor(x: number, y: number, type: string, id?: string) {
+    private constructor(x: number, y: number, type: string, id?: number) {
         this.x = x;
         this.y = y;
         this.type = type;
@@ -29,11 +29,11 @@ export class CellPoint {
 
     // ===================================
 
-    static fromArray(pt: [number, number], type?: cellType, id?: string) {
+    static fromArray(pt: [number, number], type?: cellType, id?: number) {
         return new CellPoint(pt[0], pt[1], type, id);
     }
 
-    static new(x: number, y: number, type: cellType, id: string) {
+    static new(x: number, y: number, type: cellType, id: number) {
         return new CellPoint(x, y, type, id);
     }
 
@@ -44,7 +44,7 @@ export class CellPoint {
         return !!this.contents;
     }
     setID(id: number) {
-        this.id = id.toString();
+        this.id = id;
 
         return this;
     }
