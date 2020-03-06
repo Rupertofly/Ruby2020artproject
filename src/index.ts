@@ -2,6 +2,7 @@ import PointGraph from './PointGraph';
 import CellPoint from './CellPoint';
 import * as d from 'd3-delaunay';
 import GD from './GraphDiagram';
+import { sample } from 'lodash';
 import { range, polygonCentroid } from 'd3';
 import { ContextTaskManager } from 'fuse-box/core/ContextTaskManager';
 enum colours {
@@ -16,10 +17,11 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const drawingContext = canvas.getContext(`2d`);
 const graph = new PointGraph(canvas.width, canvas.height, 1000);
+const TYPES = ['a', 'b', ''];
 const myPoints = range(4000).map(i => ({
-    x: 200 + Math.random() * 10,
-    y: 200 + Math.random() * 10,
-    type: Math.random() > 0.6 ? 'a' : 'b'
+    x: Math.random() * graph.width,
+    y: Math.random() * graph.height,
+    type: sample(TYPES)
 }));
 const edges = new GD([1, 1, 720, 720], myPoints, 5);
 

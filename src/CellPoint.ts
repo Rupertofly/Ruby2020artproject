@@ -40,13 +40,55 @@ export class CellPoint {
     static blank(x: number, y: number, id: number) {
         return new CellPoint(x, y, undefined).setID(id);
     }
-    get active() {
+    clone() {
+        return Object.assign(
+            new CellPoint(this.x, this.y, ''),
+            this
+        ) as CellPoint;
+    }
+    get hasNode() {
         return !!this.contents;
     }
     setID(id: number) {
         this.id = id;
 
         return this;
+    }
+    setGroup(group: number) {
+        this.group = group;
+
+        return this;
+    }
+    setType(type: string = undefined) {
+        this.type = type;
+
+        return this;
+    }
+    fillPoint(node: GraphNode) {
+        this.contents = node;
+
+        return this;
+    }
+    emptyPoint() {
+        this.contents = undefined;
+
+        return this;
+    }
+    force(x: number, y: number) {
+        this.fx = x;
+        this.fy = y;
+
+        return this;
+    }
+    release() {
+        this.fx = undefined;
+        this.fy = undefined;
+
+        return this;
+    }
+
+    get held() {
+        return this.fx || this.fy;
     }
     // ===================================
 }
