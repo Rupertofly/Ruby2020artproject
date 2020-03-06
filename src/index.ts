@@ -23,6 +23,15 @@ const myPoints = range(4000).map(i => ({
 }));
 const edges = new GD([1, 1, 720, 720], myPoints, 5);
 
+function drawPath(
+    path: Array<pt | number[]>,
+    context: CanvasRenderingContext2D,
+    close = true
+) {
+    context.moveTo(...(path[0] as pt));
+    path.slice(1).forEach(([x, y]) => context.lineTo(x, y));
+    if (close) context.closePath();
+}
 console.log(edges);
 drawingContext.strokeStyle = 'black';
 drawingContext.lineWidth = 1;
@@ -33,8 +42,7 @@ edges.edges().map(edge => {
     if (edge.left.type === edge.left.type) return;
     drawingContext.beginPath();
 
-    drawingContext.moveTo(...edge[0]);
-    drawingContext.lineTo(...edge[1]);
+    drawPath(edge, drawingContext, false);
     drawingContext.stroke();
     drawingContext.strokeStyle = 'green';
     drawingContext.beginPath();
@@ -51,15 +59,6 @@ drawingContext.fillStyle = 'blue';
 
 //     context.fillRect(x, y, 2, 2);
 // }
-
-function drawPolygon(polygon: [number, number][]) {
-    drawingContext.moveTo(...polygon[1]);
-    drawingContext.beginPath();
-    for (let i = 1; i < polygon.length; i++) {
-        drawingContext.lineTo(...polygon[i]);
-    }
-    drawingContext.closePath();
-}
 
 function constrain(val: number, min: number, max: number) {
     return val < min ? min : val > max ? max : val;

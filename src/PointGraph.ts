@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import * as _ from 'lodash';
 import CellPoint from './CellPoint';
 import GraphDiagram from './GraphDiagram';
+import DisjointSet from './disjointset';
 
 /* TODO:
 
@@ -151,11 +152,22 @@ export class PointGraph {
 
         const groups = typedCells.map(src => {
             const type = src.type;
-            const unvisitedCells = [src.cells];
-            const groups = 0;
+            const unvisitedCells = [...src.cells];
+            const dsjSet = new DisjointSet(unvisitedCells, d => d.id);
+
+            unvisitedCells.map(cp => {
+                const cpID = cp.id;
+
+                neighbours[cpID].nbs.map(nb => {
+                    if (nb.type === type && nb.id > cpID)
+                        dsjSet.union(cpID, nb.id);
+                });
+            });
+
+            return { type, groups: dsjSet.groups() };
         });
 
-        return neighbours;
+        return groups;
     }
     runVoronoi(points: CellPoint[] = this.blankPoints) {
         this.currentDiagram.updatePoints(points);
