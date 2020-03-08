@@ -3,7 +3,7 @@ import { range } from 'd3';
 type pt = [number, number];
 export class GraphDiagram<T extends XYVector> {
     points: T[];
-    edgePoints: XYVector[];
+    edgePoints: (XYVector & { boundary?: boolean })[];
     delaunayGraph: Delaunay<T>;
     voronoiGraph: Voronoi<T>;
     extent: [number, number, number, number];
@@ -16,8 +16,8 @@ export class GraphDiagram<T extends XYVector> {
         const [pointMinX, pointMinY, width, height] = extent;
 
         for (const x of range(pointMinX, width, borderWidth)) {
-            this.edgePoints.push({ x, y: pointMinY });
-            this.edgePoints.push({ x, y: height });
+            this.edgePoints.push({ x, y: pointMinY, boundary: true });
+            this.edgePoints.push({ x, y: height, boundary: true });
         }
         for (const y of range(pointMinY, height, borderWidth)) {
             this.edgePoints.push({ y, x: pointMinX }, { y, x: width });
@@ -70,10 +70,7 @@ export class GraphDiagram<T extends XYVector> {
             const triI = Math.floor(i / 3) * 2;
             const triJ = Math.floor(j / 3) * 2;
             const vxI: pt = [circumcenters[triI], circumcenters[triI + 1]];
-            const vxJ: pt = [
-                this.voronoiGraph.circumcenters[triJ],
-                this.voronoiGraph.circumcenters[triJ + 1]
-            ];
+            const vxJ: pt = [circumcenters[triJ], circumcenters[triJ + 1]];
 
             output.push(
                 Object.assign([vxI, vxJ] as [pt, pt], {

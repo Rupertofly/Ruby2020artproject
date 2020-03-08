@@ -51,8 +51,7 @@ export class PointGraph {
     /** Number of points */
     pointsCount = NUM_POINTS;
 
-    blankPoints: CellPoint[] = [];
-    populatedPoints: CellPoint[] = [];
+    cellPoints: CellPoint[] = [];
 
     // voronoiFunction: d3.VoronoiLayout<CellPoint>;
     currentDiagram: GraphDiagram<CellPoint>;
@@ -67,25 +66,27 @@ export class PointGraph {
      * @param points - number of points to generate
      */
     constructor(width?: number, height?: number, points?: number) {
+        const EDGE_WIDTH = 15;
+
         this.width = width ?? this.width;
         this.height = height ?? this.height;
         this.pointsCount = points ?? this.pointsCount;
         d3.range(this.pointsCount).forEach(i =>
-            this.blankPoints.push(
+            this.cellPoints.push(
                 CellPoint.new(
                     random(this.width),
                     random(this.height),
-                    _.sample([undefined, undefined, undefined, `red`, 'blue']),
+                    _.sample([undefined, undefined, `red`, 'blue']),
                     i
                 )
             )
         );
         this.currentDiagram = new GraphDiagram(
             [0, 0, this.width, this.height],
-            this.blankPoints,
-            1
+            this.cellPoints,
+            15
         );
-        this.forceSim = d3.forceSimulation(this.blankPoints);
+        this.forceSim = d3.forceSimulation(this.cellPoints);
         this.forceSim.stop();
         // this.forceSim.alphaTarget(0);
         // this.forceSim.alphaDecay(0.001);
@@ -104,7 +105,7 @@ export class PointGraph {
         const lloydForce: d3.Force<CellPoint, any> = alpha => {
             const arr = this.currentDiagram || this.runVoronoi().currentDiagram;
 
-            this.blankPoints.map((polygon, i) => {
+            this.cellPoints.map((polygon, i) => {
                 const [cx, cy] = d3.polygonCentroid(
                     this.currentDiagram.polygon(i)
                 );
@@ -113,16 +114,50 @@ export class PointGraph {
                 polygon.vy -= (polygon.y - cy) * alpha * 0.1;
             });
         };
+        const boundsForce: d3.Force<CellPoint, any> = () => {
+            const { width: W, height: H } = this;
+
+            for (const node of this.cellPoints) {
+                if (node.x > W - EDGE_WIDTH) {
+                    node.x = W - EDGE_WIDTH;
+                    if (node.vx > 1) node.vx *= -1;
+                }
+                if (node.y > H - EDGE_WIDTH) {
+                    node.y = H - EDGE_WIDTH;
+                    if (node.vy > 1) node.vy *= -1;
+                }
+                if (node.x < EDGE_WIDTH) {
+                    node.x = EDGE_WIDTH;
+                    if (node.vx < -1) node.vx *= -1;
+                }
+                if (node.y < EDGE_WIDTH) {
+                    node.y = EDGE_WIDTH;
+                    if (node.vy < -1) node.vy *= -1;
+                }
+            }
+        };
         const collideForce = d3
             .forceCollide<CellPoint>()
-            .radius((d, i) => (d.type ? (i % 16 === 0 ? 60 : 5) : 0));
+            .radius((d, i) => (d.contents ? 30 : 0));
+        const centeringForce = d3.forceCenter<CellPoint>(width / 2, height / 2);
+        const hl: any = alpha => {
+            centeringForce(alpha);
+        };
+
+        hl.x = width / 2;
+        hl.y = height / 2;
+        hl.initialize = nodes => {
+            centeringForce.initialize(nodes.filter(nd => nd.type));
+        };
 
         this.forceSim.force(`collision`, collideForce);
+        this.forceSim.force('bounds', boundsForce);
+        this.forceSim.force('centre', centeringForce);
         const groupingForce = d3
             .forceLink()
             .links(
                 _.flatMap(
-                    this.blankPoints
+                    this.cellPoints
                         .filter(p => p.type)
                         .map((cell, i, arr) =>
                             arr
@@ -138,9 +173,41 @@ export class PointGraph {
         this.forceSim.force(`spacing`, lloydForce);
     }
     getRegionHulls() {
-        const type = group(this.blankPoints, p => p.type);
+        const groups = this.groupCells();
+        const edges = this.currentDiagram.edges();
+
+        type edge = GraphDiagram.edge<CellPoint>;
+        const regionHulls = new Map<string, Map<number, edge[]>>();
+        const pushEdge = (edge: edge, type: string, group: number) => {
+            if (!regionHulls.has(type)) regionHulls.set(type, new Map());
+            const gp = regionHulls.get(type);
+
+            if (!gp.has(group)) gp.set(group, []);
+            gp.get(group).push(edge);
+        };
+
+        edges
+            .filter(e => e.left?.type !== e.right?.type)
+            .forEach(edge => {
+                // only left has type
+                if (!edge.right?.type) {
+                    pushEdge(edge, edge.left.type, edge.left.group);
+
+                    return;
+                }
+                // only right has type
+                if (!edge.left?.type) {
+                    pushEdge(edge, edge.right.type, edge.right.group);
+
+                    return;
+                }
+                pushEdge(edge, edge.right.type, edge.right.group);
+                pushEdge(edge, edge.left.type, edge.left.group);
+            });
+
+        return regionHulls;
     }
-    groupCells(cells: CellPoint[] = this.blankPoints) {
+    groupCells(cells: CellPoint[] = this.cellPoints) {
         const cellSet = [...cells];
         const neighbours = cellSet.map((currentCell, i) => ({
             currentCell,
@@ -158,19 +225,34 @@ export class PointGraph {
             unvisitedCells.map(cp => {
                 const cpID = cp.id;
 
-                neighbours[cpID].nbs.map(nb => {
-                    if (nb.type === type && nb.id > cpID)
-                        dsjSet.union(cpID, nb.id);
-                });
+                neighbours[cpID].nbs
+                    .filter(v => v !== undefined)
+                    .map(nb => {
+                        if (nb.type === type && nb.id > cpID)
+                            dsjSet.union(cpID, nb.id);
+                    });
+            });
+            const gp = dsjSet.groups().filter(arr => {
+                return arr.length > 1;
             });
 
-            return { type, groups: dsjSet.groups() };
+            return {
+                type,
+                groups: gp.map((gp, gpID) => {
+                    gp.forEach(cell => (cell.group = gpID));
+
+                    return gp;
+                })
+            };
         });
 
         return groups;
     }
-    runVoronoi(points: CellPoint[] = this.blankPoints) {
+    runVoronoi(points: CellPoint[] = this.cellPoints) {
         this.currentDiagram.updatePoints(points);
+        points.map(v => {
+            v.group = undefined;
+        });
 
         return this;
     }
