@@ -74,9 +74,9 @@ export class PointGraph {
         d3.range(this.pointsCount).forEach(i =>
             this.cellPoints.push(
                 CellPoint.new(
-                    random(this.width),
-                    random(this.height),
-                    _.sample([undefined, undefined, `red`, 'blue']),
+                    100 + random(this.width - 200),
+                    100 + random(this.height - 500),
+                    _.sample([undefined, `red`, 'blue']),
                     i
                 )
             )
@@ -88,8 +88,8 @@ export class PointGraph {
         );
         this.forceSim = d3.forceSimulation(this.cellPoints);
         this.forceSim.stop();
-        // this.forceSim.alphaTarget(0);
-        // this.forceSim.alphaDecay(0.001);
+        this.forceSim.alphaTarget(0.8);
+        this.forceSim.alphaDecay(0.0);
         const constrain = (n: number, min: number, max: number) =>
             Math.max(min, Math.min(max, n));
         const PADDING = 0.9;

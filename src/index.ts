@@ -2,20 +2,66 @@ import PointGraph from './PointGraph';
 import CellPoint from './CellPoint';
 import * as d from 'd3-delaunay';
 import GD from './GraphDiagram';
+import BS from '@rupertofly/b-spline';
 import { sample } from 'lodash';
-
+import CC from '@rupertofly/capture-client';
 import { range, polygonCentroid } from 'd3';
+import { hullsFromGroup } from './getHulls';
 enum colours {
     red = 'rgb(245, 106, 104)',
     blue = 'rgb(88, 181, 222)',
-    purple = 'rgb(180, 116, 238)'
+    purple = 'rgb(180, 116, 238,0.8)'
+}
+enum sColours {
+    red = '#fab5b3',
+    blue = '#abdaef',
+    purple = 'rgb(180, 116, 238,0.8)'
 }
 type celltype = undefined | 'red' | 'blue';
+type pt = [number, number];
 const canvas = document.getElementById(`canvas`) as HTMLCanvasElement;
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = 1080;
+canvas.height = 1920;
 const drawingContext = canvas.getContext(`2d`);
+const graph = new PointGraph(canvas.width, canvas.height, 1000);
+const Cap = new CC(4646, canvas);
+
+/* function drawCircle(pt: pt, radius = 5, stroke = '#fab5b3', fill = '#f56a68') {
+    const [x, y] = pt;
+
+    drawingContext.strokeStyle = stroke;
+    drawingContext.fillStyle = fill;
+    drawingContext.beginPath();
+    drawingContext.ellipse(x, y, radius, radius, 0, 0, Math.PI * 2);
+    drawingContext.fill();
+    drawingContext.stroke();
+}
+const vecMultSc = (vec: pt, sc: number) => [vec[0] * sc, vec[1] * sc] as pt;
+const vecAddSc = (vec: pt, sc: number) => [vec[0] + sc, vec[1] + sc] as pt;
+const vecAdd = (vecA: pt, vecB: pt) =>
+    [vecA[0] + vecB[0], vecA[1] + vecB[1]] as pt;
+const vecInt = (vecA: pt, vecB: pt, t: number) =>
+    vecAdd(vecMultSc(vecA, 1 - t), vecMultSc(vecB, t - 0));
+const DEG = 6;
+const cnP: [number, number][] = [
+    [100, 100],
+    [50, 200],
+    [100, 300],
+    [300, 300],
+    [350, 200],
+    [300, 100]
+];
+const fM = cnP.slice(0, DEG);
+const mP = cnP.length;
+
+cnP.push([0, 0]);
+
+cnP.push(...fM);
+cnP.map(p => drawCircle(p, 3));
+
+canvas.onmousemove = e => (cnP[mP] = [e.offsetX, e.offsetY]);
+
 const graph = new PointGraph(canvas.width, canvas.height, 1000);
 const TYPES = ['a', 'b', ''];
 const myPoints = range(4000).map(i => ({
@@ -61,113 +107,99 @@ drawingContext.fillStyle = 'blue';
 
 //     context.fillRect(x, y, 2, 2);
 // }
-
+ */
 function constrain(val: number, min: number, max: number) {
     return val < min ? min : val > max ? max : val;
 }
 
-type pt = [number, number];
 function samePoint(a: pt, b: pt) {
     return a[0] === b[0] && a[1] === b[1];
 }
+function drawPath(
+    path: Array<pt | number[]>,
+    context: CanvasRenderingContext2D,
+    close = true
+) {
+    context.moveTo(...(path[0] as pt));
+    path.slice(1).forEach(([x, y]) => context.lineTo(x, y));
+    if (close) context.closePath();
+}
+function drawSpline(
+    path: Array<pt>,
+    context: CanvasRenderingContext2D,
+    deg: number,
+    close = true
+) {
+    const inputPoints = path.slice(0);
 
+    if (close) inputPoints.push(...path.slice(0, deg));
+    context.moveTo(...BS<pt>(0, deg, inputPoints));
+    for (let i = 0; i < 1; i += 1 / (path.length * 3)) {
+        context.lineTo(...BS<pt>(i, deg, inputPoints));
+    }
+    if (close) context.closePath();
+}
+Cap.start({
+    frameRate: 30,
+    lengthIsFrames: true,
+    maxLength: 6 * 30,
+    name: `blurple`
+});
 function render() {
+    drawingContext.shadowColor = `rgba(0,0,0,0.4)`;
+    drawingContext.shadowBlur = 3;
+    drawingContext.shadowOffsetX = 1;
+    drawingContext.shadowOffsetY = 1;
+    function drawloop(
+        type: string
+    ): (
+        value: [number, number][],
+        index: number,
+        array: [number, number][][]
+    ) => void {
+        return l => {
+            drawingContext.fillStyle = colours[type] ?? 'black';
+            drawingContext.strokeStyle = sColours[type] ?? 'black';
+            drawingContext.beginPath();
+            drawSpline(l, drawingContext, Math.min(l.length, 8), true);
+            drawingContext.shadowColor = `rgba(0,0,0,0.2)`;
+            drawingContext.shadowBlur = 3;
+            drawingContext.shadowOffsetX = 2;
+            drawingContext.shadowOffsetY = 2;
+            drawingContext.stroke();
+            drawingContext.shadowColor = `rgba(0,0,0,0.0)`;
+            drawingContext.fill();
+        };
+    }
     // graph.forceSim.alpha() > 0.1 && console.time('x');
-    graph.forceSim.tick();
-    drawingContext.clearRect(0, 0, canvas.width, canvas.height);
-    drawingContext.strokeStyle = `black`;
-    drawingContext.lineWidth = 2;
+    drawingContext.fillStyle = '#fafafa';
+    drawingContext.fillRect(0, 0, canvas.width, canvas.height);
+    drawingContext.lineWidth = 8;
+    const hulls: pt[][][] = [];
+
+    graph.forceSim.tick(1);
     graph.runVoronoi();
-    edges.updatePoints(myPoints);
-    // myPoints.map((p, i) => {
-    //     const [cx, cy] = polygonCentroid(edges.polygon(i));
+    const rg = graph.getRegionHulls();
 
-    //     (p.x = cx), (p.y = cy);
-    // });
-    const voronoiGraph = graph.currentDiagram;
-    const len = (a: pt) => {
-        return Math.sqrt(a[0] ** 2 + a[1] ** 2);
-    };
-    const norm = (a: pt, sz: number) => {
-        const l = len(a);
+    graph.cellPoints.forEach(cell => {
+        if (cell.type === undefined) return;
+        const nb = graph.currentDiagram.neighbors(cell.id);
 
-        return [(a[0] / l) * sz, (a[1] / l) * sz] as pt;
-    };
-    const eg = voronoiGraph.edges();
-    const gp = graph.getRegionHulls();
+        if (nb.every(n => n?.type !== cell.type) && cell.type !== undefined) {
+            cell.type = undefined;
+        }
+        if (!nb.every(n => n?.type === cell.type || n?.type === undefined)) {
+            cell.type = undefined;
+        }
+    });
+    rg.forEach((typeCells, type) => {
+        typeCells.forEach((groupedCells, group) => {
+            const h = hullsFromGroup(groupedCells, type, group);
 
-    gp.forEach((v, k) => {
-        drawingContext.fillStyle = k;
-        v.forEach((edges, gp) => {
-            for (let edge of edges) {
-                let newEdge: GD.edge<CellPoint>;
-                const { left, right } = edge;
-
-                if (right && right.type === k && right.group === gp) {
-                    // flip edge
-                    newEdge = Object.assign(
-                        [edge[1], edge[0]] as GD.edge<CellPoint>,
-                        {
-                            left: right,
-                            right: left
-                        }
-                    );
-                } else {
-                    newEdge = edge;
-                }
-                edge = newEdge;
-                drawingContext.beginPath();
-                drawingContext.moveTo(...edge[0]);
-                const dist = norm(
-                    [edge.left.x - edge[0][0], edge.left.y - edge[0][1]],
-                    2
-                );
-
-                drawingContext.lineTo(
-                    edge[0][0] + dist[0],
-                    edge[0][1] + dist[1]
-                );
-                drawingContext.lineTo(...edge[1]);
-                drawingContext.closePath();
-                drawingContext.fill();
-            }
+            hulls.push(h);
+            h.map(drawloop(type));
         });
     });
-    /*
-        eg.map(edge => {
-            if (!edge?.left) return;
-            drawingContext.fillStyle = 'black';
-            drawingContext.beginPath();
-            drawingContext.moveTo(...edge[0]);
-            const dist = norm(
-                [edge.left.x - edge[0][0], edge.left.y - edge[0][1]],
-                8
-            );
-    
-            drawingContext.lineTo(edge[0][0] + dist[0], edge[0][1] + dist[1]);
-            drawingContext.lineTo(...edge[1]);
-            drawingContext.closePath();
-            drawingContext.fill();
-        });
-    */
-    // voronoiGraph.points.forEach(cell => {
-    //     drawingContext.fillStyle = colours[cell.type] ?? 'rgb(250, 250, 250)';
-    //     drawingContext.beginPath();
-    //     const circleRadius =
-    //         cell.type === 'red' ? 12 : cell.type === 'blue' ? 12 : 2;
-
-    //     drawingContext.ellipse(
-    //         cell.x,
-    //         cell.y,
-    //         circleRadius,
-    //         circleRadius,
-    //         0,
-    //         0,
-    //         Math.PI * 2
-    //     );
-
-    //     drawingContext.fill();
-    // });
-    window.requestAnimationFrame(render);
+    Cap.capture().then(() => requestAnimationFrame(render));
 }
-window.requestAnimationFrame(render);
+requestAnimationFrame(render);
