@@ -22,6 +22,10 @@
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-unused-vars": "off",
         "@typescript-eslint/no-namespace": "off",
+        "@typescript-eslint/no-use-before-define": [
+            "error",
+            { "functions": false }
+        ],
         "quotes": ["error", "single", { "allowTemplateLiterals": true }],
         "padding-line-between-statements": [
             "error",
