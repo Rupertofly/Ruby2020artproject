@@ -19,7 +19,10 @@
     },
     "dependencies": {
         "@rupertofly/capture-client": "^1.1.1",
+        "@rupertofly/h": "^1.0.1",
         "@rupertofly/noise": "^1.0.2",
+        "@rupertofly/voronoi-regions": "^1.0.1",
+        "@types/d3-delaunay": "^4.1.0",
         "d3": "^5.15.0",
         "d3-delaunay": "^5.2.1",
         "lodash": "^4.17.15",
