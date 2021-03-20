@@ -3,13 +3,19 @@ import * as d3 from 'd3';
 import * as Del from 'd3-delaunay';
 import * as h from '@rupertofly/h';
 import vorReg from '@rupertofly/voronoi-regions';
+import { renderModule } from 'fuse-box/stylesheet/sassHandler';
 const cv = document.createElement('canvas');
 const ctx = cv.getContext('2d');
 const [WID, HEI] = [800, 800];
 
+function getColorIndicesForCoord(x, y, width) {
+    const red = y * (width * 4) + x * 4;
+
+    return [red, red + 1, red + 2, red + 3];
+}
 cv.width = WID;
 cv.height = HEI;
-ctx.fillStyle = '#fefefe';
+ctx.fillStyle = '#ffffff';
 ctx.fillRect(0, 0, WID, HEI);
 document.body.append(cv);
 const lumiScale = d3
@@ -38,3 +44,39 @@ for (const l of d3.range(0, 7, 1)) {
         ctx.fillRect(10 + l * 30, hues.indexOf(h) * 30, 30, 40);
     }
 }
+function toIso(x: number, y: number, z: number): h.Pt {
+    const _x = (x - z) / Math.sqrt(2);
+    const _y = (x + 2 * y + z) / Math.sqrt(6);
+
+    return [_x, _y];
+}
+
+function* graphBuilder() {
+    for (const z of d3.range(300)) {
+        const op = [];
+
+        for (const y of d3.range(300)) {
+            for (const x of d3.range(300)) {
+                const [xx, yy] = toIso(x, -y, z);
+                const col = d3.hcl(
+                    (x / 300) * 360,
+                    (y / 300) * 150,
+                    (z / 300) * 150
+                );
+
+                ctx.fillStyle = col.toString();
+                ctx.fillRect(xx + 300, yy + 300, 1, 1);
+            }
+        }
+        console.log(op);
+
+        yield;
+    }
+}
+const g = graphBuilder();
+
+function rend() {
+    g.next();
+    requestAnimationFrame(rend);
+}
+rend();
