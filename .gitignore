@@ -156,3 +156,5 @@ temp/
 .history
 tests/cache
 # End of https://www.gitignore.io/api/visualstudiocode
+public
+.public
