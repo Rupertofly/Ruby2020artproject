@@ -1,102 +1,101 @@
-import * as NS from '@rupertofly/noise';
-import * as REC from '@rupertofly/capture-client';
-const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-const ctx = canvas.getContext('2d');
-const [WID, HEI] = [1080, 1920];
-const PI = Math.PI;
-const TAU = PI * 2;
-const n = new NS.simplex3DNoise(0.5);
-const n2 = new NS.simplex3DNoise(0.5);
-const n3 = new NS.simplex3DNoise(0.5);
-let FG: CanvasImageSource;
-let BG: CanvasImageSource;
+import { range } from 'd3';
+import bs from '@rupertofly/b-spline';
+type pt = [number, number];
+const cv: HTMLCanvasElement = document.getElementById(
+  'canvas'
+) as HTMLCanvasElement;
 
-function loadImage(src: string) {
-    return new Promise<CanvasImageSource>(res => {
-        const img = new Image(1080, 1920);
+cv.width = 1080;
+cv.height = 1920;
+function mainHilbert() {
+  const order = 5;
+  const extent = 2 ** order;
+  const points = extent ** 2;
+  const len = 1920 / extent;
+  const path: pt[] = new Array<pt>(points);
+  const ctx = (document.getElementById(
+    'canvas'
+  ) as HTMLCanvasElement).getContext('2d');
 
-        img.src = src;
-        img.onload = () => {
-            res(img);
-        };
-    });
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 1080, 1920);
+  ctx.fillStyle = '#d34f73';
+  // ctx.fillStyle = 'white';
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.shadowColor = 'rgb(0,0,0,0.5)';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineWidth = 8 * 2;
+  ctx.lineJoin = 'round';
+  for (const i of range(points)) {
+    path[i] = hilbert(i, order);
+    // ctx.lineTo(path[i][0] * len, path[i][1] * len);
+    // ctx.lineTo(path[i - 1][0] * len + 64, path[i - 1][1] * len + 64);
+  }
+  const startDegree = 1;
+  const st = path[0];
+  const en = path[path.length - 1];
+
+  ctx.moveTo(5, 5);
+  for (let t = 0; t < 1; t += 1 / 16384) {
+    const degree = Math.floor(t * (path.length / 8)) || 1;
+    const newPath: pt[] = [
+      ...(range(degree) as any).fill(st),
+      ...path,
+      ...(range(degree) as any).fill(en)
+    ];
+
+    const pt = bs(t, degree, newPath);
+
+    ctx.lineTo(5 + pt[0] * len, 5 + pt[1] * len);
+  }
+  // ctx.stroke();
+  // ctx.shadowColor = 'rgb(0,0,0,0)';
+  ctx.fill();
+  console.log(path);
 }
-canvas.width = WID;
-canvas.height = HEI;
-ctx.lineWidth = 16;
-// ctx.translate(0, -840);
-ctx.save();
-const frameNumber = 0;
-const Capture = new REC.CaptureClient(4646, canvas);
+function hilbert(index: number, order: number) {
+  const points: pt[] = [
+    [0, 0],
+    [0, 1],
+    [1, 1],
+    [1, 0]
+  ];
+  let newIndex = index;
+  let internalIndex = newIndex & 3;
+  const vertex: pt = points[internalIndex] as pt;
 
-function drawWave(
-    time: number,
-    noise: NS.simplex3DNoise,
-    colour: string,
-    height = 8
-) {
-    ctx.save();
-    ctx.translate(0, 1440);
-    const pts: [number, number][] = [];
+  for (const j of range(1, order)) {
+    newIndex = newIndex >>> 2;
+    internalIndex = newIndex & 3;
+    const length = 2 ** j;
+    let temp = 0;
 
-    for (let x = 0; x <= 1080; x += 6) {
-        pts.push([x, noise.get(time, x * 0.015) * height]);
+    switch (internalIndex) {
+      case 0:
+        temp = vertex[0];
+
+        vertex[0] = vertex[1];
+        vertex[1] = temp;
+        break;
+      case 1:
+        vertex[1] = vertex[1] + length;
+        break;
+      case 2:
+        vertex[0] = vertex[0] + length;
+        vertex[1] = vertex[1] + length;
+        break;
+      case 3:
+        temp = length - 1 - vertex[0];
+        vertex[0] = length - 1 - vertex[1];
+        vertex[1] = temp;
+        vertex[0] = vertex[0] + length;
+        break;
     }
-    ctx.fillStyle = colour;
-    ctx.beginPath();
-    ctx.moveTo(0, 1000);
-    pts.map(p => ctx.lineTo(...p));
-    ctx.lineTo(1080, 1000);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
+  }
+
+  return vertex;
 }
-Capture.start({
-    frameRate: 60,
-    lengthIsFrames: true,
-    maxLength: 360,
-    name: 'waving'
-});
-const bg = 'rgb(152, 178, 209)';
-const fg = '#01798c';
-const of = 'rgb(87,61,30)';
-const blue = { r: 90, g: 194, b: 198 };
-// const fullOffset = 'rgb(152,178,239)';
-// const fullOffset = 'rgb(152,239,209)';
-// const fullOffset = 'rgb(239,178,209)';
-// const fullOffset = 'rgb(239,178,239)';
-// const fullOffset = 'rgb(152,239,239)';
-// const fullOffset = 'rgb(239,239,209)';
-let frameCount = 0;
-
-function drawLoop() {
-    ctx.fillStyle = '#373737';
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillRect(0, 0, 5555, 5555);
-    ctx.drawImage(BG, 0, 0);
-    ctx.fillStyle = '#2c3137';
-    ctx.globalCompositeOperation = 'difference';
-    drawWave(frameCount / 360, n, '#2b0000', 48);
-    ctx.globalCompositeOperation = 'lighter';
-    drawWave(frameCount / 360, n2, '#004800', 48);
-    drawWave(frameCount / 360, n3, '#000055', 48);
-    ctx.globalCompositeOperation = 'source-over';
-
-    ctx.drawImage(FG, 0, 0);
-    frameCount = frameCount + 1;
-}
-
-async function dLoopWrap() {
-    ctx.save();
-    drawLoop();
-    ctx.restore();
-    await Capture.capture();
-    window.requestAnimationFrame(dLoopWrap);
-}
-const st = async () => {
-    BG = await loadImage('/BG.png');
-    FG = await loadImage('/FG.png');
-    window.requestAnimationFrame(dLoopWrap);
-};
-
-st();
+mainHilbert();
