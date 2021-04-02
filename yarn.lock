@@ -9,6 +9,13 @@
   dependencies:
     commander "^2.15.1"
 
+"@mhyfritz/bin-data@0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@mhyfritz/bin-data/-/bin-data-0.0.3.tgz#45e99b39691f802272c96c59773801f039cd6a5b"
+  integrity sha512-HV1cSxACr+F9fu8hx/B6AArDWywV84gqJCGl3zwdjujxzATg40QZ/OSbHih9h+kM168+adD7SQAoaGRZHh7cQQ==
+  dependencies:
+    d3-array "^2.3.1"
+
 "@rupertofly/capture-client@^1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@rupertofly/capture-client/-/capture-client-1.1.1.tgz#8dba091e1f15c8aa6bf188a7e7e0adaa49a297ec"
@@ -370,6 +377,13 @@ d3-array@1, d3-array@^1.1.1, d3-array@^1.2.0:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/d3-array/-/d3-array-1.2.4.tgz#635ce4d5eea759f6f605863dbcfc30edc737f71f"
   integrity sha512-KHW6M86R+FUPYGb3R5XiYjXPq7VzwxZ22buHhAEVG5ztoEcZZMLov530mmccaqA1GghZArjQV46fuc8kUqhhHw==
+
+d3-array@^2.3.1:
+  version "2.12.1"
+  resolved "https://registry.yarnpkg.com/d3-array/-/d3-array-2.12.1.tgz#e20b41aafcdffdf5d50928004ececf815a465e81"
+  integrity sha512-B0ErZK/66mHtEsR1TkPEEkwdy+WDesimkM5gpZr5Dsg54BiTA5RXtYW5qTLIAcekaS9xfZrzBLF/OAkB3Qn1YQ==
+  dependencies:
+    internmap "^1.0.0"
 
 d3-axis@1:
   version "1.0.12"
@@ -931,6 +945,13 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
+hilbert-curve@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/hilbert-curve/-/hilbert-curve-2.0.5.tgz#8d2387abdaccddef3f470a45074770472839e68f"
+  integrity sha512-A3y2Wxxozptu83VlylD0HF+PPgjlZwNbAZL6+iJLltiFbDpeVs9JQPQU6/Tk6Dz3/2PxzgLfvcCppqseRsqt+w==
+  dependencies:
+    "@mhyfritz/bin-data" "0.0.3"
+
 human-signals@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/human-signals/-/human-signals-2.1.0.tgz#dc91fcba42e4d06e4abaed33b3e7a3c02f514ea0"
@@ -952,6 +973,11 @@ inherits@^2.0.1, inherits@^2.0.3, inherits@~2.0.1, inherits@~2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.4.tgz#0fa2c64f932917c3433a0ded55363aae37416b7c"
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
+
+internmap@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/internmap/-/internmap-1.0.1.tgz#0017cc8a3b99605f0302f2b198d272e015e5df95"
+  integrity sha512-lDB5YccMydFBtasVtxnZ3MRBHuaoE8GKsppq+EchKL2U4nK/DmEpPHNH8MZe5HkMtpSiTSOZwfN0tzYjO/lJEw==
 
 is-core-module@^2.2.0:
   version "2.2.0"
