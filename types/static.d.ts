@@ -1,4 +1,3 @@
-
 /* Use this file to declare any custom file extensions for importing */
 /* Use this folder to also add/extend a package d.ts file, if needed. */
 
@@ -58,3 +57,9 @@ declare module '*.png' {
 }
 
 /* CUSTOM: ADD YOUR OWN HERE */
+declare module 'hilbert-curve' {
+  type hsPoint = { x: number; y: number };
+  export function indexToPoint(index: number, order: number): hsPoint;
+  export function pointToIndex(point: hsPoint, order: number): number;
+  export function construct(data: ArrayLike<number>, order?: number): number[];
+}
