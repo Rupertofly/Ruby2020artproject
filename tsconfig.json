@@ -1,8 +1,13 @@
 {
   "compilerOptions": {
-    "module": "ES2020",
+    "module": "ESNext",
     "outDir": "./dist",
-    "target": "ES2018",
+    "target": "ESNext",
+    "baseUrl": "./",
+    "noEmit": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "useDefineForClassFields": true,
     "jsx": "react",
     "importHelpers": true,
     "moduleResolution": "node",
