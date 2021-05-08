@@ -33,11 +33,11 @@ export class CellPoint {
         return new CellPoint(pt[0], pt[1], type, id);
     }
 
-    static new(x: number, y: number, type: cellType, id: number) {
+    static newCell(x: number, y: number, type: cellType, id: number) {
         return new CellPoint(x, y, type, id);
     }
 
-    static blank(x: number, y: number, id: number) {
+    static newBlankCell(x: number, y: number, id: number) {
         return new CellPoint(x, y, undefined).setID(id);
     }
     clone() {
@@ -64,23 +64,23 @@ export class CellPoint {
 
         return this;
     }
-    fillPoint(node: GraphNode) {
+    setNode(node: GraphNode) {
         this.contents = node;
 
         return this;
     }
-    emptyPoint() {
+    clearNode() {
         this.contents = undefined;
 
         return this;
     }
-    force(x: number, y: number) {
+    forcePosition(x: number, y: number) {
         this.fx = x;
         this.fy = y;
 
         return this;
     }
-    release() {
+    releaseLock() {
         this.fx = undefined;
         this.fy = undefined;
 
