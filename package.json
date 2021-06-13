@@ -6,13 +6,15 @@
     "repository": "git@github.com:Rupertofly/Ruby2020artproject.git",
     "author": "Ruby Quail <ruby@rubyquail.design>",
     "license": "MIT",
-    "scripts": {},
+    "scripts": {
+        "serve": "sp dev"
+    },
     "source": "src/index.ts",
     "dependencies": {
         "@rupertofly/capture-client": "^1.1.1",
         "@rupertofly/noise": "^1.0.2",
         "d3": "^5.15.0",
-        "d3-delaunay": "^5.2.1"
+        "d3-delaunay": "^6.0.2"
     },
     "devDependencies": {
         "@types/d3": "^5.7.2",
