@@ -12,11 +12,13 @@
     "source": "src/index.ts",
     "dependencies": {
         "@rupertofly/capture-client": "^1.1.1",
+        "@rupertofly/h": "^4.1.0",
         "@rupertofly/noise": "^1.0.2",
         "d3": "^5.15.0",
         "d3-delaunay": "^6.0.2"
     },
     "devDependencies": {
+        "@snowpack/plugin-typescript": "^1.2.1",
         "@types/d3": "^5.7.2",
         "tslib": "^1.11.0",
         "typescript": "^3.7.5"
